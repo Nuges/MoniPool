@@ -18,6 +18,7 @@ import { Spacing, BorderRadius, Shadows } from '../../constants/Layout';
 import TrustBadge from '../../components/TrustBadge';
 import { walletService } from '../services/WalletService';
 import { reputationService } from '../services/ReputationService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Wallet, Transaction } from '../models/schema';
 import { useFocusEffect } from 'expo-router';
 import { useAuth } from '../context/AuthContext';
@@ -43,7 +44,9 @@ export default function Dashboard() {
             setHistory([...userHistory]);
             setTrustScore(scoreData.score);
             setTrustLevel(scoreData.score >= 80 ? 'verified' : scoreData.score >= 50 ? 'growing' : 'high_risk');
-            setAutoDebitActive(false); // TODO: Fetch real setting later
+            // Read persisted auto-debit setting
+            const savedAutoDebit = await AsyncStorage.getItem(`autoDebit_${userId}`);
+            setAutoDebitActive(savedAutoDebit === 'true');
         } catch (error) {
             console.error('[Dashboard] Failed to load data:', error);
         }

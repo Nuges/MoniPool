@@ -24,6 +24,7 @@ import { formatCurrencyFull, getTransactionIcon } from '../utils/formatters';
 import { useAuth } from '../context/AuthContext';
 import { walletService } from '../services/WalletService';
 import { Wallet as WalletModel, Transaction } from '../models/schema';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Wallet() {
     const { userId } = useAuth();
@@ -44,6 +45,9 @@ export default function Wallet() {
             const txs = await walletService.getHistory(userId);
             setWallet(w || null);
             setHistory(txs || []);
+            // Load persisted auto-debit setting
+            const saved = await AsyncStorage.getItem(`autoDebit_${userId}`);
+            if (saved !== null) setAutoDebit(saved === 'true');
         } catch (error) {
             console.error('[Wallet] Failed to load wallet data:', error);
         } finally {
@@ -156,10 +160,13 @@ export default function Wallet() {
                         </View>
                         <TouchableOpacity
                             style={[styles.toggle, autoDebit && styles.toggleActive]}
-                            onPress={() => {
+                            onPress={async () => {
                                 const newValue = !autoDebit;
                                 setAutoDebit(newValue);
-                                // TODO: Persist toggle state to backend
+                                // Persist toggle state
+                                if (userId) {
+                                    await AsyncStorage.setItem(`autoDebit_${userId}`, String(newValue));
+                                }
                             }}
                         >
                             <View
