@@ -71,7 +71,7 @@ export default function JoinPoolModal({ visible, tier, onClose, onSuccess }: Joi
                 return;
             }
             // Calculate totals
-            const layout = poolService.calculateTotalRecurringDeduction(tier, frequency, userId || 'user1');
+            const layout = await poolService.calculateTotalRecurringDeduction(tier, frequency, userId || 'user1');
             const prev = await poolService.getPreviewInfo(tier, 'monthly'); // Always monthly payout for now? App seems to imply fixed payout cycle.
 
             setCalculations(layout);

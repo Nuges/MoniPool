@@ -114,9 +114,11 @@ export class PoolService {
             return targetPool; // Idempotency
         }
 
-        // 4. Join with Trust-Based Payout Slot Assignment
+        // 4. Join — Provisional slot = next available position
+        // The FINAL trust-based resequencing happens when the pool LOCKS (5/5 members).
+        // During filling, use simple sequential slots so payout dates look correct.
         const poolCapacity = targetPool.capacity ?? this.POOL_CAPACITY;
-        const payoutSlot = await payoutSequencerService.assignProvisionalSlot(targetPool.id, userId, poolCapacity);
+        const payoutSlot = targetPool.currentMembers + 1;
         const cycleDurationDays = this.getCycleDurationDays(targetPool.cycle);
 
         const referenceDate = targetPool.startDate || new Date();
@@ -363,8 +365,9 @@ export class PoolService {
             throw new Error('Pool is already full.');
         }
 
+        // Provisional slot = next position (trust-based resequencing happens at lock)
         const poolCapacity = targetPool.capacity ?? this.POOL_CAPACITY;
-        const payoutSlot = await payoutSequencerService.assignProvisionalSlot(poolId, userId, poolCapacity);
+        const payoutSlot = targetPool.currentMembers + 1;
         const cycleDurationDays = this.getCycleDurationDays(targetPool.cycle);
 
         const referenceDate = targetPool.startDate || new Date();
